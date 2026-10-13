@@ -11,7 +11,7 @@ const provider = createProvider(config);
 const searchCache = new TtlCache<PublicTrack[]>(config.cacheTtlMs);
 const app = Fastify({ logger: { redact: ['req.headers.authorization', 'req.headers.cookie', '*.url'] } });
 
-app.get('/manifest.json', async (_request, reply) => reply.send({
+app.get('/manifest.json', async (_request, reply) => reply.header('Cache-Control', 'public, max-age=3600, s-maxage=86400').send({
   id: 'com.bitchord.qobuz', name: 'Qobuz', version: '1.0.0', resources: ['search', 'stream'],
   allowDownloads: 0,
   settings: [{ key: 'quality', type: 'select', default: 'lossless', options: [
@@ -26,16 +26,16 @@ app.get<{ Querystring: { q?: string; quality?: string; atmos?: string } }>('/sea
   const atmos = request.query.atmos ?? 'auto';
   const key = `${query}\u0000${quality}\u0000${atmos}`;
   const cached = searchCache.get(key);
-  if (cached) return reply.send({ tracks: cached });
+  if (cached) return reply.header('Cache-Control', 'public, max-age=30, s-maxage=300, stale-while-revalidate=600').send({ tracks: cached });
   try {
     const tracks = (await provider.search(query, quality, atmos)).flatMap(track => {
       try { return [normalizeTrack(track, config.idSecret)]; } catch { return []; }
     });
     searchCache.set(key, tracks);
-    return reply.send({ tracks });
+    return reply.header('Cache-Control', 'public, max-age=30, s-maxage=300, stale-while-revalidate=600').send({ tracks });
   } catch (error) {
     const stale = searchCache.getStale(key);
-    if (stale) return reply.send({ tracks: stale, stale: true });
+    if (stale) return reply.header('Cache-Control', 'public, max-age=10, s-maxage=30, stale-while-revalidate=120').send({ tracks: stale, stale: true });
     throw error;
   }
 });

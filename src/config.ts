@@ -29,8 +29,8 @@ export function loadConfig(): Config {
   return {
     host: process.env.HOST ?? '0.0.0.0',
     port: positiveInt('PORT', 3000),
-    requestTimeoutMs: positiveInt('REQUEST_TIMEOUT_MS', 10000),
-    upstreamRetries: positiveInt('UPSTREAM_RETRIES', 2),
+    requestTimeoutMs: positiveInt('REQUEST_TIMEOUT_MS', 6000),
+    upstreamRetries: positiveInt('UPSTREAM_RETRIES', 1),
     cacheTtlMs: positiveInt('CACHE_TTL_SECONDS', 300) * 1000,
     idSecret: process.env.QOBUZ_ID_SECRET ?? 'qobuz-bitchord-id-secret-v1',
     provider,
