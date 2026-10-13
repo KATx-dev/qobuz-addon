@@ -5,11 +5,12 @@ export interface Config {
   upstreamRetries: number;
   cacheTtlMs: number;
   idSecret: string;
-  provider: 'stub' | 'http' | 'qobuzdl';
+  provider: 'stub' | 'http' | 'qobuzdl' | 'multi';
   apiBaseUrl?: string;
   searchPath?: string;
   streamPath?: string;
   apiToken?: string;
+  lastBabeBaseUrl?: string;
 }
 
 const positiveInt = (name: string, fallback: number): number => {
@@ -19,8 +20,8 @@ const positiveInt = (name: string, fallback: number): number => {
 };
 
 export function loadConfig(): Config {
-  const provider = (process.env.QOBUZ_PROVIDER ?? 'qobuzdl').toLowerCase();
-  if (provider !== 'stub' && provider !== 'http' && provider !== 'qobuzdl') throw new Error('QOBUZ_PROVIDER must be stub, http, or qobuzdl');
+  const provider = (process.env.QOBUZ_PROVIDER ?? 'multi').toLowerCase();
+  if (provider !== 'stub' && provider !== 'http' && provider !== 'qobuzdl' && provider !== 'multi') throw new Error('QOBUZ_PROVIDER must be stub, http, qobuzdl, or multi');
   const apiBaseUrl = process.env.QOBUZ_API_BASE_URL ?? process.env.QOBUZ_UPSTREAM_BASE_URL ?? (provider === 'qobuzdl' ? 'https://qobuz-dll.vercel.app' : undefined);
   if (provider === 'http' && (!apiBaseUrl || !/^https:\/\//i.test(apiBaseUrl))) {
     throw new Error('QOBUZ_API_BASE_URL must be an HTTPS URL when QOBUZ_PROVIDER=http');
@@ -37,5 +38,6 @@ export function loadConfig(): Config {
     searchPath: process.env.QOBUZ_SEARCH_PATH,
     streamPath: process.env.QOBUZ_STREAM_PATH,
     apiToken: process.env.QOBUZ_API_TOKEN,
+    lastBabeBaseUrl: process.env.LASTBABE_BASE_URL ?? 'https://lastbabe-addon.de.deplexo.com',
   };
 }

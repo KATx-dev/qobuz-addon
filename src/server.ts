@@ -5,13 +5,11 @@ import { AppError, badRequest, notFound } from './errors.js';
 import { normalizeTrack, publicId, streamResponse, upstreamIdFromPublicId } from './normalize.js';
 import { createProvider } from './providers/index.js';
 import type { Quality, PublicTrack } from './types.js';
-import { homePage } from './home.js';
 
 const config = loadConfig();
 const provider = createProvider(config);
 const searchCache = new TtlCache<PublicTrack[]>(config.cacheTtlMs);
 const app = Fastify({ logger: { redact: ['req.headers.authorization', 'req.headers.cookie', '*.url'] } });
-app.get('/', async (_request, reply) => reply.type('text/html; charset=utf-8').send(homePage));
 
 app.get('/manifest.json', async (_request, reply) => reply.send({
   id: 'com.bitchord.qobuz', name: 'Qobuz', version: '1.0.0', resources: ['search', 'stream'],
@@ -46,7 +44,7 @@ app.get<{ Params: { id: string }; Querystring: { quality?: string; atmos?: strin
   const quality = parseQuality(request.query.quality);
   const atmos = request.query.atmos ?? 'auto';
   const id = request.params.id;
-  if (!/^qobuz_[A-Za-z0-9_-]{10,40}$/.test(id)) throw notFound('track not found');
+  if (!/^qobuz_[A-Za-z0-9_-]{10,120}$/.test(id)) throw notFound('track not found');
   const upstreamId = upstreamIdFromPublicId(id, config.idSecret);
   if (!upstreamId) throw notFound('track not available');
   const stream = await provider.getStream(upstreamId, quality, atmos);

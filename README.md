@@ -1,19 +1,22 @@
 # Qobuz BitChord Addon
 
-A TypeScript/Node.js, playback-only BitChord addon exposing `/manifest.json`, `/search`, and `/stream/:id`, plus a lightweight Qobuz TV web page at `/`.
+A TypeScript/Node.js, playback-only BitChord addon exposing `/manifest.json`, `/search`, and `/stream/:id`.
 
-The home page is intentionally built without a frontend framework: it uses plain HTML/CSS and `XMLHttpRequest`, with large remote-friendly controls and a native audio element for older Sony Bravia/Vewd browsers.
+## Upstream providers
 
-## Upstream provider
+The default `multi` provider races two compatible JSON backends and uses the first one that returns usable search results:
 
-The default provider uses the verified Qobuz-DL-compatible routes at `https://qobuz-dll.vercel.app/`:
+- LastBabe: `https://lastbabe-addon.de.deplexo.com/search` and `/stream/:id`
+- Qobuz-DL fallback: `https://qobuz-dll.vercel.app/api/get-music` and `/api/download-music`
+
+The Qobuz-DL routes are:
 
 - `/api/get-music?q=...&offset=0` for catalogue search
 - `/api/download-music?track_id=...&quality=...` for a playable URL
 
 The provider only consumes the public JSON response, never handles Qobuz credentials, and does not expose upstream headers or URLs except for the validated playback URL returned to BitChord. It does not guess routes, scrape private APIs, extract tokens, bypass authentication, or download media.
 
-The default `QOBUZ_PROVIDER=qobuzdl` targets that public service. If the upstream returns an authorization or availability error, the addon returns a clean upstream failure rather than fabricating tracks or streams. `QOBUZ_PROVIDER=stub` remains available for local contract-only testing.
+The default `QOBUZ_PROVIDER=multi` races both backends. Each returned track ID is signed and includes its source, so a LastBabe ID is never accidentally sent to Qobuz-DL or vice versa. If one backend is unavailable, the other can still serve results. `QOBUZ_PROVIDER=qobuzdl` and `QOBUZ_PROVIDER=stub` remain available for focused testing.
 
 ## Contract
 
@@ -42,8 +45,9 @@ Node.js 20+ is required. Environment variables are read directly by the process;
 The default configuration is:
 
 ```dotenv
-QOBUZ_PROVIDER=qobuzdl
+QOBUZ_PROVIDER=multi
 QOBUZ_UPSTREAM_BASE_URL=https://qobuz-dll.vercel.app
+LASTBABE_BASE_URL=https://lastbabe-addon.de.deplexo.com
 ```
 
 The base URL is configurable if the public service changes hostnames or you operate an authorized compatible deployment.
@@ -60,7 +64,7 @@ QOBUZ_API_TOKEN=             # optional; never log it
 
 The documented provider must return search JSON as either `{ "tracks": [...] }` or an array, with each usable track containing `upstreamId` and `title`. Stream JSON must contain an HTTPS `url`; set `manifest` to `none`, `hls`, or `dash` when applicable and set `encrypted: true` for protected media (it will be refused). The adapter sends `q`, `quality`, and `atmos`, applies timeouts, handles 404/429/5xx, and validates JSON shape. It does not expose the authorization header to BitChord clients.
 
-The server maintains a short-lived in-memory mapping from each opaque `qobuz_*` id returned by search to the provider's upstream ID; `/stream` never treats the public ID as a URL. For multiple instances, replace this cache with a shared TTL store or use sticky routing. Do not put upstream URLs or credentials in public IDs.
+The server uses signed stateless `qobuz_*` IDs containing an encoded source/upstream ID; `/stream` never treats the public ID as a URL. This works across serverless instances and does not expose upstream URLs or credentials.
 
 ## Production deployment
 
