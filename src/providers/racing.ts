@@ -36,9 +36,11 @@ export class RacingProvider implements QobuzProvider {
   }
 }
 
-export function createRacingProvider(qobuzdl: QobuzProvider, lastbabe: QobuzProvider): QobuzProvider {
-  return new RacingProvider([
+export function createRacingProvider(qobuzdl: QobuzProvider, lastbabe: QobuzProvider, optional?: QobuzProvider): QobuzProvider {
+  const sources: Source[] = [
     { name: 'lastbabe', provider: lastbabe },
     { name: 'qobuzdl', provider: qobuzdl },
-  ]);
+  ];
+  if (optional) sources.unshift({ name: 'optional', provider: optional });
+  return new RacingProvider(sources);
 }

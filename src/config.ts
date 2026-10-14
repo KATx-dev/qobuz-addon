@@ -11,6 +11,7 @@ export interface Config {
   streamPath?: string;
   apiToken?: string;
   lastBabeBaseUrl?: string;
+  optionalBaseUrl?: string;
 }
 
 const positiveInt = (name: string, fallback: number): number => {
@@ -39,5 +40,6 @@ export function loadConfig(): Config {
     streamPath: process.env.QOBUZ_STREAM_PATH,
     apiToken: process.env.QOBUZ_API_TOKEN,
     lastBabeBaseUrl: process.env.LASTBABE_BASE_URL ?? 'https://lastbabe-addon.de.deplexo.com',
+    optionalBaseUrl: process.env.OPTIONAL_BACKEND_BASE_URL ?? 'https://arcod.xyz',
   };
 }
