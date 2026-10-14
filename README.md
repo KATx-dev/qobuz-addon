@@ -4,7 +4,7 @@ A TypeScript/Node.js, playback-only BitChord addon exposing `/manifest.json`, `/
 
 ## Upstream providers
 
-The default `multi` provider races two compatible JSON backends and uses the first one that returns usable search results:
+The default `multi` provider races the configured compatible JSON backends and uses the first one that returns usable search results:
 
 - LastBabe: `https://lastbabe-addon.de.deplexo.com/search` and `/stream/:id`
 - Qobuz-DL fallback: `https://qobuz-dll.foreyou.workers.dev/api/get-music` and `/api/download-music`
@@ -16,13 +16,14 @@ The Qobuz-DL routes are:
 
 The provider only consumes the public JSON response, never handles Qobuz credentials, and does not expose upstream headers or URLs except for the validated playback URL returned to BitChord. It does not guess routes, scrape private APIs, extract tokens, bypass authentication, or download media.
 
-The default `QOBUZ_PROVIDER=multi` races both backends. Each returned track ID is signed and includes its source, so a LastBabe ID is never accidentally sent to Qobuz-DL or vice versa. If one backend is unavailable, the other can still serve results. `QOBUZ_PROVIDER=qobuzdl` and `QOBUZ_PROVIDER=stub` remain available for focused testing.
+The default `QOBUZ_PROVIDER=multi` races the configured backends. Each returned track ID is signed and includes its source, so an ID is never accidentally sent to the wrong provider. If one backend is unavailable, another can still serve results. `QOBUZ_PROVIDER=qobuzdl` and `QOBUZ_PROVIDER=stub` remain available for focused testing.
 
 ## Contract
 
 - `GET /manifest.json`: stable id `com.bitchord.qobuz`, `resources: ["search", "stream"]`, `allowDownloads: 0`.
 - `GET /search?q=...&quality=...&atmos=auto`: returns `{ tracks: [] }` or normalized tracks with opaque IDs.
 - `GET /stream/:id?quality=...&atmos=auto`: returns a directly playable HTTPS rendition, or 404 when unavailable.
+- The same contract is also available under isolated source prefixes `/a`, `/b`, and `/c`, each with its own manifest, search, and stream routes.
 - Lossless, codec, manifest, bitrate, sample rate, bit depth, and Dolby fields are only returned when the provider supplies them. Encrypted streams and malformed URLs are refused.
 
 ## Local development

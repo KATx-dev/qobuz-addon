@@ -7,6 +7,8 @@ import { LastBabeProvider } from './lastbabe.js';
 import { createRacingProvider } from './racing.js';
 import { OptionalJsonProvider } from './optional.js';
 
+export type IsolatedSource = 'qobuzdl' | 'optional' | 'lastbabe';
+
 export function createProvider(config: Config): QobuzProvider {
   if (config.provider === 'qobuzdl') return new QobuzDlProvider(config);
   if (config.provider === 'multi') {
@@ -15,4 +17,10 @@ export function createProvider(config: Config): QobuzProvider {
   }
   if (config.provider === 'http') return new HttpQobuzProvider(config);
   return new StubQobuzProvider();
+}
+
+export function createSourceProvider(config: Config, source: IsolatedSource): QobuzProvider {
+  if (source === 'qobuzdl') return new QobuzDlProvider({ ...config, apiBaseUrl: config.apiBaseUrl ?? 'https://qobuz-dll.foreyou.workers.dev' });
+  if (source === 'optional') return new OptionalJsonProvider({ ...config, optionalBaseUrl: config.optionalBaseUrl ?? 'https://arcod.xyz' });
+  return new LastBabeProvider(config);
 }

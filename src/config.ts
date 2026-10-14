@@ -23,7 +23,7 @@ const positiveInt = (name: string, fallback: number): number => {
 export function loadConfig(): Config {
   const provider = (process.env.QOBUZ_PROVIDER ?? 'multi').toLowerCase();
   if (provider !== 'stub' && provider !== 'http' && provider !== 'qobuzdl' && provider !== 'multi') throw new Error('QOBUZ_PROVIDER must be stub, http, qobuzdl, or multi');
-  const apiBaseUrl = process.env.QOBUZ_API_BASE_URL ?? process.env.QOBUZ_UPSTREAM_BASE_URL ?? (provider === 'qobuzdl' ? 'https://qobuz-dll.foreyou.workers.dev' : undefined);
+  const apiBaseUrl = process.env.QOBUZ_API_BASE_URL ?? process.env.QOBUZ_UPSTREAM_BASE_URL ?? 'https://qobuz-dll.foreyou.workers.dev';
   if (provider === 'http' && (!apiBaseUrl || !/^https:\/\//i.test(apiBaseUrl))) {
     throw new Error('QOBUZ_API_BASE_URL must be an HTTPS URL when QOBUZ_PROVIDER=http');
   }
