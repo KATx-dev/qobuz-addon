@@ -7,7 +7,7 @@ A TypeScript/Node.js, playback-only BitChord addon exposing `/manifest.json`, `/
 The default `multi` provider races two compatible JSON backends and uses the first one that returns usable search results:
 
 - LastBabe: `https://lastbabe-addon.de.deplexo.com/search` and `/stream/:id`
-- Qobuz-DL fallback: `https://qobuz-dll.vercel.app/api/get-music` and `/api/download-music`
+- Qobuz-DL fallback: `https://qobuz-dll.foreyou.workers.dev/api/get-music` and `/api/download-music`
 
 The Qobuz-DL routes are:
 
@@ -46,7 +46,7 @@ The default configuration is:
 
 ```dotenv
 QOBUZ_PROVIDER=multi
-QOBUZ_UPSTREAM_BASE_URL=https://qobuz-dll.vercel.app
+QOBUZ_UPSTREAM_BASE_URL=https://qobuz-dll.foreyou.workers.dev
 LASTBABE_BASE_URL=https://lastbabe-addon.de.deplexo.com
 ```
 
