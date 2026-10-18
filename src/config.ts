@@ -12,6 +12,8 @@ export interface Config {
   apiToken?: string;
   lastBabeBaseUrl?: string;
   optionalBaseUrl?: string;
+  monochromeBaseUrl?: string;
+  deezerBaseUrl?: string;
 }
 
 const positiveInt = (name: string, fallback: number): number => {
@@ -40,8 +42,10 @@ export function loadConfig(): Config {
     streamPath: process.env.QOBUZ_STREAM_PATH,
     apiToken: process.env.QOBUZ_API_TOKEN,
     lastBabeBaseUrl: process.env.LASTBABE_BASE_URL ?? 'https://lastbabe-addon.de.deplexo.com',
-    // /b is intentionally pinned to the verified Arcod-compatible backend.
+    // /b is intentionally pinned to the verified alternate backend.
     // Do not let a stale deployment variable silently redirect this source.
     optionalBaseUrl: 'https://arcod.xyz',
+    monochromeBaseUrl: process.env.MONOCHROME_BASE_URL ?? 'https://tracks.monochrome.st',
+    deezerBaseUrl: process.env.DEEZER_BASE_URL ?? 'https://dzr.tabs-vs-spaces.wtf',
   };
 }
