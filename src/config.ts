@@ -40,6 +40,8 @@ export function loadConfig(): Config {
     streamPath: process.env.QOBUZ_STREAM_PATH,
     apiToken: process.env.QOBUZ_API_TOKEN,
     lastBabeBaseUrl: process.env.LASTBABE_BASE_URL ?? 'https://lastbabe-addon.de.deplexo.com',
-    optionalBaseUrl: process.env.OPTIONAL_BACKEND_BASE_URL ?? 'https://arcod.xyz',
+    // /b is intentionally pinned to the verified Arcod-compatible backend.
+    // Do not let a stale deployment variable silently redirect this source.
+    optionalBaseUrl: 'https://arcod.xyz',
   };
 }
