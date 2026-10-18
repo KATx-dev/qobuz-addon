@@ -37,7 +37,16 @@ export class OptionalJsonProvider implements QobuzProvider {
       // and stream tokens; keep the faster global timeout for other providers.
       const timeout = setTimeout(() => controller.abort(), Math.max(this.config.requestTimeoutMs, 15000));
       try {
-        const response = await fetch(url, { headers: { accept: 'application/json' }, signal: controller.signal });
+        const response = await fetch(url, {
+          headers: {
+            accept: 'application/json',
+            'accept-language': 'en-US,en;q=0.9',
+            'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131 Safari/537.36',
+            referer: 'https://arcod.xyz/',
+            origin: 'https://arcod.xyz',
+          },
+          signal: controller.signal,
+        });
         let body: unknown;
         try { body = await response.json(); } catch { throw new UpstreamError(502, 'optional backend returned invalid JSON'); }
         if (!response.ok) {
