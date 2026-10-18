@@ -33,7 +33,9 @@ export class OptionalJsonProvider implements QobuzProvider {
     let lastError: unknown;
     for (let attempt = 0; attempt <= this.config.upstreamRetries; attempt += 1) {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), this.config.requestTimeoutMs);
+      // This backend commonly needs several seconds to resolve Qobuz metadata
+      // and stream tokens; keep the faster global timeout for other providers.
+      const timeout = setTimeout(() => controller.abort(), Math.max(this.config.requestTimeoutMs, 15000));
       try {
         const response = await fetch(url, { headers: { accept: 'application/json' }, signal: controller.signal });
         let body: unknown;
