@@ -12,7 +12,6 @@ const app = Fastify({ logger: { redact: ['req.headers.authorization', 'req.heade
 const manifests = {
   root: { id: 'com.bitchord.qobuz', name: 'Qobuz', version: '1.0.0' },
   qobuzdl: { id: 'com.bitchord.qobuz.qobuzdl', name: 'Qobuz-DL', version: '1.0.0' },
-  optional: { id: 'com.bitchord.qobuz.optional', name: 'Qobuz Alt', version: '1.0.0' },
   lastbabe: { id: 'com.bitchord.qobuz.lastbabe', name: 'LastBabe', version: '1.0.0' },
   monochrome: { id: 'com.bitchord.qobuz.monochrome', name: 'Monochrome Lossless', version: '1.0.0' },
   deezer: { id: 'com.bitchord.qobuz.deezer', name: 'Deezer Fallback', version: '1.0.0' },
@@ -21,11 +20,10 @@ const manifests = {
 
 registerAddon('', createProvider(config), manifests.root);
 registerAddon('/a', createSourceProvider(config, 'qobuzdl'), manifests.qobuzdl);
-registerAddon('/b', createSourceProvider(config, 'optional'), manifests.optional);
-registerAddon('/c', createSourceProvider(config, 'lastbabe'), manifests.lastbabe);
-registerAddon('/d', createSourceProvider(config, 'monochrome'), manifests.monochrome);
-registerAddon('/e', createSourceProvider(config, 'deezer'), manifests.deezer);
-registerAddon('/f', createSourceProvider(config, 'eljohnzc'), manifests.eljohnzc);
+registerAddon('/b', createSourceProvider(config, 'lastbabe'), manifests.lastbabe);
+registerAddon('/c', createSourceProvider(config, 'monochrome'), manifests.monochrome);
+registerAddon('/d', createSourceProvider(config, 'deezer'), manifests.deezer);
+registerAddon('/e', createSourceProvider(config, 'eljohnzc'), manifests.eljohnzc);
 
 function registerAddon(prefix: string, provider: QobuzProvider, manifest: { id: string; name: string; version: string }): void {
   const searchCache = new TtlCache<PublicTrack[]>(config.cacheTtlMs);

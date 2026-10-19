@@ -10,8 +10,7 @@ The default `multi` provider races all configured compatible backends and uses t
 - Qobuz-DL: `https://qobuz-dll.foreyou.workers.dev/api/get-music` and `/api/download-music`
 - Deezer fallback: `https://dzr.tabs-vs-spaces.wtf/search` and `/stream/:id`
 - LastBabe: a fresh 48-hour source minted from `https://lastbabe.velixir.run`
-- Eljohnzc: a lossless source exposed under the isolated `/f` route
-- Qobuz alternate: the configured JSON-compatible alternate source
+- Eljohnzc: a lossless source exposed under the isolated `/e` route
 
 The Qobuz-DL routes are:
 
@@ -20,15 +19,15 @@ The Qobuz-DL routes are:
 
 The provider only consumes the public JSON response, never handles Qobuz credentials, and does not expose upstream headers or URLs except for the validated playback URL returned to BitChord. It does not guess routes, scrape private APIs, extract tokens, bypass authentication, or download media.
 
-The default `QOBUZ_PROVIDER=multi` races all six backends. Each returned track ID is signed and includes its source, so an ID is never accidentally sent to the wrong provider. If one backend is unavailable, another can still serve results. `QOBUZ_PROVIDER=qobuzdl` and `QOBUZ_PROVIDER=stub` remain available for focused testing.
+The default `QOBUZ_PROVIDER=multi` races all five backends. Each returned track ID is signed and includes its source, so an ID is never accidentally sent to the wrong provider. If one backend is unavailable, another can still serve results. `QOBUZ_PROVIDER=qobuzdl` and `QOBUZ_PROVIDER=stub` remain available for focused testing.
 
 ## Contract
 
 - `GET /manifest.json`: stable id `com.bitchord.qobuz`, `resources: ["search", "stream"]`, `allowDownloads: 0`.
 - `GET /search?q=...&quality=...&atmos=auto`: returns `{ tracks: [] }` or normalized tracks with opaque IDs.
 - `GET /stream/:id?quality=...&atmos=auto`: returns a directly playable HTTPS rendition, or 404 when unavailable.
-- The same contract is also available under isolated source prefixes `/a`, `/b`, `/c`, `/d`, `/e`, and `/f`, each with its own manifest, search, and stream routes.
-- `/a` is Qobuz-DL, `/b` is the alternate full-quality source, `/c` is LastBabe, `/d` is Monochrome lossless, `/e` is the Deezer fallback, and `/f` is Eljohnzc lossless.
+- The same contract is also available under isolated source prefixes `/a`, `/b`, `/c`, `/d`, and `/e`, each with its own manifest, search, and stream routes.
+- `/a` is Qobuz-DL, `/b` is LastBabe, `/c` is Monochrome lossless, `/d` is the Deezer fallback, and `/e` is Eljohnzc lossless.
 - Lossless, codec, manifest, bitrate, sample rate, bit depth, and Dolby fields are only returned when the provider supplies them. Encrypted streams and malformed URLs are refused.
 
 ## Local development
