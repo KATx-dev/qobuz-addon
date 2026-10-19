@@ -1,9 +1,13 @@
+import { createHash } from 'node:crypto';
 import type { Config } from '../config.js';
 import type { QobuzProvider, QobuzStream, QobuzTrack, Quality } from '../types.js';
 import { UpstreamError } from './http.js';
 
 export class LastBabeProvider implements QobuzProvider {
   constructor(private readonly config: Config) {}
+  private resolvedBaseUrl?: string;
+  private resolvedExpiresAt = 0;
+  private resolving?: Promise<string>;
 
   async search(query: string, _quality: Quality, _atmos: string): Promise<QobuzTrack[]> {
     const body = await this.request('/search', { q: query });
@@ -26,9 +30,8 @@ export class LastBabeProvider implements QobuzProvider {
   }
 
   private async request(path: string, params: Record<string, string>): Promise<unknown> {
-    const base = this.config.lastBabeBaseUrl;
-    if (!base) throw new UpstreamError(502, 'LastBabe backend is not configured');
-    const url = new URL(path, base);
+    const base = await this.resolveBaseUrl();
+    const url = new URL(path.replace(/^\/+/, ''), base.endsWith('/') ? base : `${base}/`);
     for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
     let lastError: unknown;
     for (let attempt = 0; attempt <= this.config.upstreamRetries; attempt += 1) {
@@ -51,6 +54,48 @@ export class LastBabeProvider implements QobuzProvider {
       await delay(200 * 2 ** attempt);
     }
     throw lastError instanceof UpstreamError ? lastError : new UpstreamError(502, 'LastBabe backend request failed');
+  }
+
+  private async resolveBaseUrl(): Promise<string> {
+    const configured = this.config.lastBabeBaseUrl;
+    if (!configured) throw new UpstreamError(502, 'LastBabe backend is not configured');
+    if (!configured.includes('lastbabe.velixir.run') || /\/e\/[^/]+\/[^/]+/.test(configured)) return configured.replace(/\/$/, '');
+    if (this.resolvedBaseUrl && Date.now() < this.resolvedExpiresAt - 60_000) return this.resolvedBaseUrl;
+    this.resolving ??= this.mintFreshUrl(configured).finally(() => { this.resolving = undefined; });
+    return this.resolving;
+  }
+
+  private async mintFreshUrl(landingUrl: string): Promise<string> {
+    const root = landingUrl.endsWith('/') ? landingUrl : `${landingUrl}/`;
+    const challengeResponse = await fetch(`${root}challenge`, { signal: AbortSignal.timeout(Math.max(this.config.requestTimeoutMs, 15000)) });
+    if (!challengeResponse.ok) throw new UpstreamError(502, 'LastBabe challenge failed');
+    const challenge = await challengeResponse.json() as { challenge?: unknown; difficulty?: unknown };
+    if (typeof challenge.challenge !== 'string') throw new UpstreamError(502, 'LastBabe challenge was malformed');
+    const difficulty = typeof challenge.difficulty === 'number' && challenge.difficulty >= 1 && challenge.difficulty <= 8 ? challenge.difficulty : 4;
+    const prefix = '0'.repeat(difficulty);
+    let nonce = 0;
+    let found: string | undefined;
+    while (!found) {
+      for (let i = 0; i < 20_000; i += 1) {
+        nonce += 1;
+        const candidate = String(nonce);
+        if (createHash('sha256').update(challenge.challenge + candidate).digest('hex').startsWith(prefix)) { found = candidate; break; }
+      }
+      if (!found) await new Promise(resolve => setImmediate(resolve));
+    }
+    const mintResponse = await fetch(`${root}mint`, {
+      method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify({ challenge: challenge.challenge, nonce: found }),
+      signal: AbortSignal.timeout(Math.max(this.config.requestTimeoutMs, 15000)),
+    });
+    if (!mintResponse.ok) throw new UpstreamError(502, 'LastBabe mint failed');
+    const minted = await mintResponse.json() as { manifestUrl?: unknown; addonUrl?: unknown; expiresAt?: unknown };
+    const manifestUrl = typeof minted.manifestUrl === 'string' ? minted.manifestUrl : typeof minted.addonUrl === 'string' ? minted.addonUrl : undefined;
+    if (!manifestUrl || !/^https:\/\//i.test(manifestUrl)) throw new UpstreamError(502, 'LastBabe mint response was malformed');
+    const base = manifestUrl.replace(/\/manifest\.json$/, '').replace(/\/$/, '');
+    this.resolvedBaseUrl = base;
+    this.resolvedExpiresAt = typeof minted.expiresAt === 'number' ? minted.expiresAt * 1000 : Date.now() + 48 * 60 * 60 * 1000;
+    return base;
   }
 }
 

@@ -5,7 +5,7 @@ import { UpstreamError } from './http.js';
 type RecordValue = Record<string, unknown>;
 
 export class RemoteAddonProvider implements QobuzProvider {
-  constructor(private readonly config: Config) {}
+  constructor(private readonly config: Config, private readonly configuredBaseUrl?: string) {}
 
   async search(query: string, quality: Quality, atmos: string): Promise<QobuzTrack[]> {
     const body = await this.request('/search', { q: query, quality, atmos });
@@ -26,8 +26,8 @@ export class RemoteAddonProvider implements QobuzProvider {
   }
 
   private async request(path: string, params: Record<string, string>): Promise<unknown> {
-    const base = this.config.deezerBaseUrl ?? 'https://dzr.tabs-vs-spaces.wtf';
-    const url = new URL(path, base);
+    const base = this.configuredBaseUrl ?? this.config.deezerBaseUrl ?? 'https://dzr.tabs-vs-spaces.wtf';
+    const url = new URL(path.replace(/^\/+/, ''), base.endsWith('/') ? base : `${base}/`);
     for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.config.requestTimeoutMs);

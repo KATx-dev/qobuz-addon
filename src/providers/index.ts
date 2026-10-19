@@ -9,7 +9,7 @@ import { OptionalJsonProvider } from './optional.js';
 import { MonochromeProvider } from './monochrome.js';
 import { RemoteAddonProvider } from './remote-addon.js';
 
-export type IsolatedSource = 'qobuzdl' | 'optional' | 'lastbabe' | 'monochrome' | 'deezer';
+export type IsolatedSource = 'qobuzdl' | 'optional' | 'lastbabe' | 'monochrome' | 'deezer' | 'eljohnzc';
 
 export function createProvider(config: Config): QobuzProvider {
   if (config.provider === 'qobuzdl') return new QobuzDlProvider(config);
@@ -18,6 +18,7 @@ export function createProvider(config: Config): QobuzProvider {
     return createRacingProvider(
       new QobuzDlProvider(config), new LastBabeProvider(config), optional,
       new MonochromeProvider(config), new RemoteAddonProvider(config),
+      new RemoteAddonProvider(config, config.eljohnzcBaseUrl),
     );
   }
   if (config.provider === 'http') return new HttpQobuzProvider(config);
@@ -29,5 +30,6 @@ export function createSourceProvider(config: Config, source: IsolatedSource): Qo
   if (source === 'optional') return new OptionalJsonProvider({ ...config, optionalBaseUrl: config.optionalBaseUrl ?? 'https://arcod.xyz' });
   if (source === 'monochrome') return new MonochromeProvider(config);
   if (source === 'deezer') return new RemoteAddonProvider(config);
+  if (source === 'eljohnzc') return new RemoteAddonProvider(config, config.eljohnzcBaseUrl);
   return new LastBabeProvider(config);
 }
