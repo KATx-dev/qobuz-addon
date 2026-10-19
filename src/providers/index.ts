@@ -7,8 +7,9 @@ import { LastBabeProvider } from './lastbabe.js';
 import { createRacingProvider } from './racing.js';
 import { MonochromeProvider } from './monochrome.js';
 import { RemoteAddonProvider } from './remote-addon.js';
+import { InstableProvider } from './instable.js';
 
-export type IsolatedSource = 'qobuzdl' | 'lastbabe' | 'monochrome' | 'deezer' | 'eljohnzc';
+export type IsolatedSource = 'qobuzdl' | 'lastbabe' | 'monochrome' | 'deezer' | 'eljohnzc' | 'instable';
 
 export function createProvider(config: Config): QobuzProvider {
   if (config.provider === 'qobuzdl') return new QobuzDlProvider(config);
@@ -17,6 +18,7 @@ export function createProvider(config: Config): QobuzProvider {
       new QobuzDlProvider(config), new LastBabeProvider(config),
       new MonochromeProvider(config), new RemoteAddonProvider(config),
       new RemoteAddonProvider(config, config.eljohnzcBaseUrl),
+      new InstableProvider(config),
     );
   }
   if (config.provider === 'http') return new HttpQobuzProvider(config);
@@ -28,5 +30,6 @@ export function createSourceProvider(config: Config, source: IsolatedSource): Qo
   if (source === 'monochrome') return new MonochromeProvider(config);
   if (source === 'deezer') return new RemoteAddonProvider(config);
   if (source === 'eljohnzc') return new RemoteAddonProvider(config, config.eljohnzcBaseUrl);
+  if (source === 'instable') return new InstableProvider(config);
   return new LastBabeProvider(config);
 }

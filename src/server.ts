@@ -16,6 +16,7 @@ const manifests = {
   monochrome: { id: 'com.bitchord.qobuz.monochrome', name: 'Monochrome Lossless', version: '1.0.0' },
   deezer: { id: 'com.bitchord.qobuz.deezer', name: 'Deezer Fallback', version: '1.0.0' },
   eljohnzc: { id: 'com.bitchord.qobuz.eljohnzc', name: 'Eljohnzc Lossless', version: '1.0.0' },
+  instable: { id: 'com.bitchord.qobuz.instable', name: 'Instable Lossless', version: '1.0.0' },
 } as const;
 
 registerAddon('', createProvider(config), manifests.root);
@@ -24,6 +25,7 @@ registerAddon('/b', createSourceProvider(config, 'lastbabe'), manifests.lastbabe
 registerAddon('/c', createSourceProvider(config, 'monochrome'), manifests.monochrome);
 registerAddon('/d', createSourceProvider(config, 'deezer'), manifests.deezer);
 registerAddon('/e', createSourceProvider(config, 'eljohnzc'), manifests.eljohnzc);
+registerAddon('/f', createSourceProvider(config, 'instable'), manifests.instable);
 
 function registerAddon(prefix: string, provider: QobuzProvider, manifest: { id: string; name: string; version: string }): void {
   const searchCache = new TtlCache<PublicTrack[]>(config.cacheTtlMs);

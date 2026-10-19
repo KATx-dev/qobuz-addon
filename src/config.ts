@@ -14,6 +14,7 @@ export interface Config {
   monochromeBaseUrl?: string;
   deezerBaseUrl?: string;
   eljohnzcBaseUrl?: string;
+  instableBaseUrl?: string;
 }
 
 const positiveInt = (name: string, fallback: number): number => {
@@ -45,5 +46,6 @@ export function loadConfig(): Config {
     monochromeBaseUrl: process.env.MONOCHROME_BASE_URL ?? 'https://tracks.monochrome.st',
     deezerBaseUrl: process.env.DEEZER_BASE_URL ?? 'https://dzr.tabs-vs-spaces.wtf',
     eljohnzcBaseUrl: process.env.ELJOHNZC_BASE_URL ?? 'https://eljohnzc-addon.de.deplexo.com/4433c7caff7fd070309e',
+    instableBaseUrl: process.env.INSTABLE_BASE_URL ?? 'https://instable.arcod.xyz',
   };
 }
