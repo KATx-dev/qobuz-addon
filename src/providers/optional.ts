@@ -31,7 +31,8 @@ export class OptionalJsonProvider implements QobuzProvider {
     const url = new URL(path, this.config.optionalBaseUrl);
     for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
     let lastError: unknown;
-    for (let attempt = 0; attempt <= this.config.upstreamRetries; attempt += 1) {
+    const maxAttempts = Math.max(this.config.upstreamRetries, 2);
+    for (let attempt = 0; attempt <= maxAttempts; attempt += 1) {
       const controller = new AbortController();
       // This backend commonly needs several seconds to resolve Qobuz metadata
       // and stream tokens; keep the faster global timeout for other providers.
@@ -44,6 +45,9 @@ export class OptionalJsonProvider implements QobuzProvider {
             'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131 Safari/537.36',
             referer: 'https://arcod.xyz/',
             origin: 'https://arcod.xyz',
+            'sec-fetch-site': 'same-origin',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-dest': 'empty',
           },
           signal: controller.signal,
         });
@@ -51,14 +55,14 @@ export class OptionalJsonProvider implements QobuzProvider {
         try { body = await response.json(); } catch { throw new UpstreamError(502, 'optional backend returned invalid JSON'); }
         if (!response.ok) {
           const error = new UpstreamError(retryable(response.status) ? 502 : response.status === 404 ? 404 : 400, 'optional backend request failed');
-          if (!retryable(response.status) || attempt >= this.config.upstreamRetries) throw error;
+          if (!retryable(response.status) || attempt >= maxAttempts) throw error;
           lastError = error;
         } else if (isRecord(body) && body.success === false) {
           throw new UpstreamError(502, 'optional backend request failed');
         } else return body;
       } catch (error) {
         if (error instanceof UpstreamError) {
-          if (error.status !== 502 || attempt >= this.config.upstreamRetries) throw error;
+          if (error.status !== 502 || attempt >= maxAttempts) throw error;
           lastError = error;
         } else lastError = error;
       } finally { clearTimeout(timeout); }
