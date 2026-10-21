@@ -7,7 +7,7 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/server.js",
+    "start": "npm install --omit=dev --no-audit --no-fund && node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "test": "tsx --test test/**/*.test.ts"
   },

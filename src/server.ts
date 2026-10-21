@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import { loadConfig, type Config } from './config.js';
+import { homePage } from './home.js';
 import { TtlCache } from './cache.js';
 import { AppError, badRequest, notFound } from './errors.js';
 import { normalizeTrack, streamResponse, upstreamIdFromPublicId } from './normalize.js';
@@ -18,6 +19,9 @@ const manifests = {
   eljohnzc: { id: 'com.bitchord.qobuz.eljohnzc', name: 'Eljohnzc Lossless', version: '1.0.0' },
   instable: { id: 'com.bitchord.qobuz.instable', name: 'Instable Lossless', version: '1.0.0' },
 } as const;
+
+app.get('/', async (_request, reply) => reply.type('text/html; charset=utf-8').send(homePage));
+app.get('/health', async () => ({ ok: true }));
 
 registerAddon('', createProvider(config), manifests.root);
 registerAddon('/a', createSourceProvider(config, 'qobuzdl'), manifests.qobuzdl);

@@ -32,7 +32,7 @@ export function loadConfig(): Config {
   }
   return {
     host: process.env.HOST ?? '0.0.0.0',
-    port: positiveInt('PORT', 3000),
+    port: positiveInt('PORT', Number(process.env.SERVER_PORT) || 3000),
     requestTimeoutMs: positiveInt('REQUEST_TIMEOUT_MS', 6000),
     upstreamRetries: positiveInt('UPSTREAM_RETRIES', 1),
     cacheTtlMs: positiveInt('CACHE_TTL_SECONDS', 300) * 1000,
